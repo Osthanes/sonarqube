@@ -1,0 +1,69 @@
+{
+    "id": "ibm.devops.services.pipeline.sonarqube",
+    "version": 1,
+    "name_key": "ExtName",
+    "desc_key": "ExtDesc",
+    "extension_type": "Test",
+    "message_key": "ExtMessage",
+    "inputs": [
+        {
+            "type": "Bluemix",
+            "inclusion" : "always"
+        }
+    ],
+    "params": [
+        {
+            "name": "SRC_DIRS",
+            "type": "Text",
+            "required": "false",
+            "default_value": "",
+            "label_key": "SRC_DIRS_KEY",
+            "desc_key": "SRC_DIRS_DESC"
+        },
+        {
+            "name": "SELECT_LANG",
+            "type": "Select",
+            "required": "false",
+            "default_value": " ",
+            "label_key": "SELECT_LANG_KEY",
+            "desc_key": "SELECT_LANG_DESC",
+            "options": [
+                {
+                    "label_key": "EMPTY_KEY",
+                    "value": " "
+                },
+                {
+                    "label_key": "JAVA_KEY",
+                    "value": "Java"
+                },
+                { 
+                    "label_key": "JS_KEY",
+                    "value": "Javascript" 
+                }
+            ]
+        }
+    ],
+    "outputs": [
+        {
+            "type": "Artifacts",
+            "inclusion" : "always"
+        }
+    ],
+    "execution": {
+        "type": "JenkinsDocker",
+        "shell": "#!/bin/bash
+set +x
+set +e
+export INIT_START_TIME=$(date +\"%s\")
+
+. $EXT_DIR/_init.sh
+INIT_END_TIME=$(date +\"%s\")
+INIT_EST_TIME=$(($INIT_END_TIME-$INIT_START_TIME))
+echo -e \"Init runtime of `date -u -d @\"$INIT_EST_TIME\" +\'%-Mm %-Ss\'`\"
+
+"
+    },
+    "project": "https://hub.jazz.net/project/alchemy/Alchemy-Ostanes",
+    "project_example": "https://github.com/Osthanes/sonarqube",
+    "project_contact": "elobeto@us.ibm.com"
+}
