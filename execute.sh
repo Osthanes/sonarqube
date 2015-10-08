@@ -27,5 +27,6 @@ fi
 
 if [ ! -f sonar-project.properties ]; then
     #no configuration so use provided info to run
-    sonar-runner-2.4/bin/sonar-runner -Dsonar.projectKey=${KEY} -Dsonar.projectName=${IDS_PROJECT_NAME//|} -Dsonar.projectVersion=1.0 -Dsonar.sources=${SRC}
+    proj_name="${IDS_PROJECT_NAME//|}"
+    sonar-runner-2.4/bin/sonar-runner -Dsonar.projectKey=${KEY} -Dsonar.projectName=${proj_name// /_} -Dsonar.projectVersion=1.0 -Dsonar.sources=${SRC}
 fi
