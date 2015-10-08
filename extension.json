@@ -15,42 +15,12 @@
             "desc_key": "PROJ_KEY_DESC"
         },
         {
-            "name": "PROJ_NAME",
-            "type": "Text",
-            "required": "false",
-            "default_value": "",
-            "label_key": "PROJ_NAME_KEY",
-            "desc_key": "PROJ_NAME_DESC"
-        },
-        {
             "name": "SRC_DIRS",
             "type": "Text",
             "required": "false",
             "default_value": "",
             "label_key": "SRC_DIRS_KEY",
             "desc_key": "SRC_DIRS_DESC"
-        },
-        {
-            "name": "SELECT_LANG",
-            "type": "Select",
-            "required": "false",
-            "default_value": " ",
-            "label_key": "SELECT_LANG_KEY",
-            "desc_key": "SELECT_LANG_DESC",
-            "options": [
-                {
-                    "label_key": "EMPTY_KEY",
-                    "value": " "
-                },
-                {
-                    "label_key": "JAVA_KEY",
-                    "value": "Java"
-                },
-                { 
-                    "label_key": "JS_KEY",
-                    "value": "Javascript" 
-                }
-            ]
         }
     ],
     "outputs": [
