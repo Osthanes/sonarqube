@@ -67,9 +67,7 @@ set +e
 export INIT_START_TIME=$(date +\"%s\")
         
 export SRC=#SRC_DIRS#
-export LANG=\"#SELECT_LANG#\"
 export KEY=#PROJ_KEY#
-export NAME=#PROJ_NAME#
 
 . $EXT_DIR/_init.sh
 INIT_END_TIME=$(date +\"%s\")

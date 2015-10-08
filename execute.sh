@@ -20,12 +20,12 @@ sonar.jdbc.password=sonar" > sonar-runner-2.4/conf/sonar-runner.properties
 
 #test
 #if choices are empty
-if [ -z "$SRC" ] && [ -z "$LANG"]; then
+if [ -z "$SRC" ] && [ -z "$KEY" ]; then
     #assume .properties file is present and execute
     sonar-runner-2.4/bin/sonar-runner
 fi
 
 if [ ! -f sonar-project.properties ]; then
     #no configuration so use provided info to run
-    sonar-runner-2.4/bin/sonar-runner -Dsonar.projectKey=${KEY} -Dsonar.projectName=${NAME} -Dsonar.projectVersion=1.0 -Dsonar.sources=${SRC}
+    sonar-runner-2.4/bin/sonar-runner -Dsonar.projectKey=${KEY} -Dsonar.projectName=${IDS_PROJECT_NAME} -Dsonar.projectVersion=1.0 -Dsonar.sources=${SRC}
 fi
