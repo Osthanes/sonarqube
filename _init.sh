@@ -213,11 +213,11 @@ echo "Installing Containers Plug-in"
 ${EXT_DIR}/bin/cf install-plugin https://static-ice.ng.bluemix.net/ibm-containers-linux_x64
 
 echo "Checking for existing SonarQube server"
-cf ic namespace set sonar_space
+${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic namespace set sonar_space
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
     #space is already set, check for existing Sonar image
-    existing=$(cf ic images | grep "sonar")
+    existing=$(${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic images | grep "sonar")
     if [ -z "$existing" ]; then
         #sonar image is already present, check if running
         echo "SonarQube server found, checking if running"
