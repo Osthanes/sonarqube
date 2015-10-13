@@ -211,33 +211,33 @@ echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
 
 echo "Installing Containers Plug-in"
 ${EXT_DIR}/bin/cf install-plugin https://static-ice.ng.bluemix.net/ibm-containers-linux_x64
-
+ls ${EXT_DIR}/bin/
 echo "Checking for existing SonarQube server"
-${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic namespace set sonar_space
-RESULT=$?
-if [ $RESULT -ne 0 ]; then
-    ${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic images
-    #space is already set, check for existing Sonar image
-    existing=$(${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic images | grep "sonar")
-    if [ -z "$existing" ]; then
-        #sonar image is already present, check if running
-        echo "SonarQube server found, checking if running"
-#        running=$()
-#        if [ -z "$running" ]; then
-#            #not running; start
-#            echo "SonarQube server not running, starting"
-#        else
-#           #already running, exit
-#            echo "SonarQube server is running" 
-#        fi
-    else
-        #no existing image, install
-        echo "No SonarQube server found, creating one"
-    fi
-else
-    #space set to sonar_space, need to install new image
-    echo "Created new namespace, creating new SonarQube server"
-fi
+#${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic namespace set sonar_space
+#RESULT=$?
+#if [ $RESULT -ne 0 ]; then
+#    ${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic images
+#    #space is already set, check for existing Sonar image
+#    existing=$(${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic images | grep "sonar")
+#    if [ -z "$existing" ]; then
+#        #sonar image is already present, check if running
+#        echo "SonarQube server found, checking if running"
+##        running=$()
+##        if [ -z "$running" ]; then
+##            #not running; start
+##            echo "SonarQube server not running, starting"
+##        else
+##           #already running, exit
+##            echo "SonarQube server is running" 
+##        fi
+#    else
+#        #no existing image, install
+#        echo "No SonarQube server found, creating one"
+#    fi
+#else
+#    #space set to sonar_space, need to install new image
+#    echo "Created new namespace, creating new SonarQube server"
+#fi
 
 ################################
 # get the extensions utilities #
