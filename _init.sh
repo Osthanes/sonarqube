@@ -210,14 +210,14 @@ echo "Container Cloud Foundry CLI Version: ${container_cf_version}"
 echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
 
 echo "Installing Containers Plug-in"
-${EXT_DIR}/cf install-plugin https://static-ice.ng.bluemix.net/ibm-containers-linux_x64
+${EXT_DIR}/bin/cf install-plugin https://static-ice.ng.bluemix.net/ibm-containers-linux_x64
 
 echo "Checking for existing SonarQube server"
-${EXT_DIR}/cf ic namespace set sonar_space
+${EXT_DIR}/bin/cf ic namespace set sonar_space
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
     #space is already set, check for existing Sonar image
-    existing=$(${EXT_DIR}/cf ic images | grep "sonar")
+    existing=$(${EXT_DIR}/bin/cf ic images | grep "sonar")
     if [ -z "$existing" ]; then
         #sonar image is already present, check if running
 #        running=$()
