@@ -216,8 +216,9 @@ echo "Checking for existing SonarQube server"
 ${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic namespace set sonar_space
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
+    cf ic images
     #space is already set, check for existing Sonar image
-    existing=$(${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic images | grep "sonar")
+    existing=$(${EXT_DIR}/bin/cf ic images | grep "sonar")
     if [ -z "$existing" ]; then
         #sonar image is already present, check if running
         echo "SonarQube server found, checking if running"
