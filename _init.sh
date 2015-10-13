@@ -209,65 +209,67 @@ export ICE_CFG="ice-cfg.ini"
 ################################
 # Login to Container Service   #
 ################################
-if [ -n "$API_KEY" ]; then 
-    echo -e "${label_color}Logging on with API_KEY${no_color}"
-    debugme echo "Login command: ice $ICE_ARGS login --key ${API_KEY}"
-    #ice $ICE_ARGS login --key ${API_KEY} --host ${CCS_API_HOST} --registry ${CCS_REGISTRY_HOST} --api ${BLUEMIX_API_HOST} 
-    ice $ICE_ARGS login --key ${API_KEY} 2> /dev/null
-    RESULT=$?
-elif [ -n "$BLUEMIX_USER" ] || [ ! -f ~/.cf/config.json ]; then
-    # need to gather information from the environment 
-    # Get the Bluemix user and password information 
-    if [ -z "$BLUEMIX_USER" ]; then 
-        echo -e "${red} Please set BLUEMIX_USER on environment ${no_color}" | tee -a "$ERROR_LOG_FILE"
-        ${EXT_DIR}/print_help.sh
-        exit 1
-    fi 
-    if [ -z "$BLUEMIX_PASSWORD" ]; then 
-        echo -e "${red} Please set BLUEMIX_PASSWORD as an environment property environment ${no_color}" | tee -a "$ERROR_LOG_FILE"
-        ${EXT_DIR}/print_help.sh    
-        exit 1 
-    fi 
-    if [ -z "$BLUEMIX_ORG" ]; then 
-        export BLUEMIX_ORG=$BLUEMIX_USER
-        echo -e "${label_color} Using ${BLUEMIX_ORG} for Bluemix organization, please set BLUEMIX_ORG if on the environment if you wish to change this. ${no_color} "
-    fi 
-    if [ -z "$BLUEMIX_SPACE" ]; then
-        export BLUEMIX_SPACE="dev"
-        echo -e "${label_color} Using ${BLUEMIX_SPACE} for Bluemix space, please set BLUEMIX_SPACE if on the environment if you wish to change this. ${no_color} "
-    fi 
-    echo -e "${label_color}Targetting information.  Can be updated by setting environment variables${no_color}"
-    echo "BLUEMIX_USER: ${BLUEMIX_USER}"
-    echo "BLUEMIX_SPACE: ${BLUEMIX_SPACE}"
-    echo "BLUEMIX_ORG: ${BLUEMIX_ORG}"
-    echo "BLUEMIX_PASSWORD: xxxxx"
-    echo ""
-    echo -e "${label_color}Logging in to Bluemix and IBM Container Service using environment properties${no_color}"
-    debugme echo "login command: ice $ICE_ARGS login --cf --host ${CCS_API_HOST} --registry ${CCS_REGISTRY_HOST} --api ${BLUEMIX_API_HOST} --user ${BLUEMIX_USER} --psswd ${BLUEMIX_PASSWORD} --org ${BLUEMIX_ORG} --space ${BLUEMIX_SPACE}"
-    ice $ICE_ARGS login --cf --host ${CCS_API_HOST} --registry ${CCS_REGISTRY_HOST} --api ${BLUEMIX_API_HOST} --user ${BLUEMIX_USER} --psswd ${BLUEMIX_PASSWORD} --org ${BLUEMIX_ORG} --space ${BLUEMIX_SPACE} 2> /dev/null
-    RESULT=$?
-else 
-    # we are already logged in.  Simply check via ice command 
-    echo -e "${label_color}Logging into IBM Container Service using credentials passed from IBM DevOps Services ${no_color}"
-    mkdir -p ~/.ice
-    debugme cat "${EXT_DIR}/${ICE_CFG}"
-    cp ${EXT_DIR}/${ICE_CFG} ~/.ice/ice-cfg.ini
-    debugme cat ~/.ice/ice-cfg.ini
-    debugme echo "config.json:"
-    debugme cat /home/jenkins/.cf/config.json | cut -c1-2
-    debugme cat /home/jenkins/.cf/config.json | cut -c3-
-    debugme echo "testing ice login via ice info command"
-    ice --verbose info > info.log 2> /dev/null
-    RESULT=$?
-    debugme cat info.log 
-    if [ $RESULT -eq 0 ]; then
-        echo "ice info was successful.  Checking login to registry server" 
-        ice images &> /dev/null
-        RESULT=$? 
-    else 
-        echo "ice info did not return successfully.  Login failed."
-    fi 
-fi 
+#if [ -n "$API_KEY" ]; then 
+#    echo -e "${label_color}Logging on with API_KEY${no_color}"
+#    debugme echo "Login command: ice $ICE_ARGS login --key ${API_KEY}"
+#    #ice $ICE_ARGS login --key ${API_KEY} --host ${CCS_API_HOST} --registry ${CCS_REGISTRY_HOST} --api ${BLUEMIX_API_HOST} 
+#    ice $ICE_ARGS login --key ${API_KEY} 2> /dev/null
+#    RESULT=$?
+#elif [ -n "$BLUEMIX_USER" ] || [ ! -f ~/.cf/config.json ]; then
+#    # need to gather information from the environment 
+#    # Get the Bluemix user and password information 
+#    if [ -z "$BLUEMIX_USER" ]; then 
+#        echo -e "${red} Please set BLUEMIX_USER on environment ${no_color}" | tee -a "$ERROR_LOG_FILE"
+#        ${EXT_DIR}/print_help.sh
+#        exit 1
+#    fi 
+#    if [ -z "$BLUEMIX_PASSWORD" ]; then 
+#        echo -e "${red} Please set BLUEMIX_PASSWORD as an environment property environment ${no_color}" | tee -a "$ERROR_LOG_FILE"
+#        ${EXT_DIR}/print_help.sh    
+#        exit 1 
+#    fi 
+#    if [ -z "$BLUEMIX_ORG" ]; then 
+#        export BLUEMIX_ORG=$BLUEMIX_USER
+#        echo -e "${label_color} Using ${BLUEMIX_ORG} for Bluemix organization, please set BLUEMIX_ORG if on the environment if you wish to change this. ${no_color} "
+#    fi 
+#    if [ -z "$BLUEMIX_SPACE" ]; then
+#        export BLUEMIX_SPACE="dev"
+#        echo -e "${label_color} Using ${BLUEMIX_SPACE} for Bluemix space, please set BLUEMIX_SPACE if on the environment if you wish to change this. ${no_color} "
+#    fi 
+#    echo -e "${label_color}Targetting information.  Can be updated by setting environment variables${no_color}"
+#    echo "BLUEMIX_USER: ${BLUEMIX_USER}"
+#    echo "BLUEMIX_SPACE: ${BLUEMIX_SPACE}"
+#    echo "BLUEMIX_ORG: ${BLUEMIX_ORG}"
+#    echo "BLUEMIX_PASSWORD: xxxxx"
+#    echo ""
+#    echo -e "${label_color}Logging in to Bluemix and IBM Container Service using environment properties${no_color}"
+#    debugme echo "login command: ice $ICE_ARGS login --cf --host ${CCS_API_HOST} --registry ${CCS_REGISTRY_HOST} --api ${BLUEMIX_API_HOST} --user ${BLUEMIX_USER} --psswd ${BLUEMIX_PASSWORD} --org ${BLUEMIX_ORG} --space ${BLUEMIX_SPACE}"
+#    ice $ICE_ARGS login --cf --host ${CCS_API_HOST} --registry ${CCS_REGISTRY_HOST} --api ${BLUEMIX_API_HOST} --user ${BLUEMIX_USER} --psswd ${BLUEMIX_PASSWORD} --org ${BLUEMIX_ORG} --space ${BLUEMIX_SPACE} 2> /dev/null
+#    RESULT=$?
+#else 
+#    # we are already logged in.  Simply check via ice command 
+#    echo -e "${label_color}Logging into IBM Container Service using credentials passed from IBM DevOps Services ${no_color}"
+#    mkdir -p ~/.ice
+#    debugme cat "${EXT_DIR}/${ICE_CFG}"
+#    cp ${EXT_DIR}/${ICE_CFG} ~/.ice/ice-cfg.ini
+#    debugme cat ~/.ice/ice-cfg.ini
+#    debugme echo "config.json:"
+#    debugme cat /home/jenkins/.cf/config.json | cut -c1-2
+#    debugme cat /home/jenkins/.cf/config.json | cut -c3-
+#    debugme echo "testing ice login via ice info command"
+#    ice --verbose info > info.log 2> /dev/null
+#    RESULT=$?
+#    debugme cat info.log 
+#    if [ $RESULT -eq 0 ]; then
+#        echo "ice info was successful.  Checking login to registry server" 
+#        ice images &> /dev/null
+#        RESULT=$? 
+#    else 
+#        echo "ice info did not return successfully.  Login failed."
+#    fi 
+#fi
+
+ice $ICE_ARGS login --cf --host ${CCS_API_HOST} --registry ${CCS_REGISTRY_HOST} --api ${BLUEMIX_API_HOST} --user ${BLUEMIX_USER} --psswd ${BLUEMIX_PASSWORD} --org ${BLUEMIX_ORG} --space ${BLUEMIX_SPACE}
 
 export container_cf_version=$(cf --version)
 export latest_cf_version=$(${EXT_DIR}/bin/cf --version)
