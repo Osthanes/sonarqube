@@ -74,37 +74,149 @@ else
 fi 
 export LOG_DIR=$ARCHIVE_DIR
 
+##############################
+## Install Cloud Foundry CLI #
+##############################
+#pushd . 
+#echo "Installing Cloud Foundry CLI"
+#cd $EXT_DIR 
+#mkdir bin
+#cd bin
+#curl --silent -o cf-linux-amd64.tgz -v -L https://cli.run.pivotal.io/stable?release=linux64-binary &>/dev/null 
+#gunzip cf-linux-amd64.tgz &> /dev/null
+#tar -xvf cf-linux-amd64.tar  &> /dev/null
+#
+#cf help &> /dev/null
+#RESULT=$?
+#if [ $RESULT -ne 0 ]; then
+#    echo "Cloud Foundry CLI not already installed, adding CF to PATH"
+#    export PATH=$PATH:$EXT_DIR/bin
+#else 
+#    echo 'Cloud Foundry CLI already available in container.  Latest CLI version available in ${EXT_DIR}/bin'  
+#fi 
+#
+## check that we are logged into cloud foundry correctly
+#cf spaces 
+#RESULT=$?
+#if [ $RESULT -ne 0 ]; then
+#    echo -e "${red}Failed to check cf spaces to confirm login${no_color}"
+#    exit $RESULT
+#else 
+#    echo -e "${green}Successfully logged into IBM Bluemix${no_color}"
+#fi 
+#popd 
+
+
+
 #############################
 # Install Cloud Foundry CLI #
 #############################
-pushd . 
+cf help &> /dev/null
+RESULT=$?
+if [ $RESULT -eq 0 ]; then
+    # if already have an old version installed, save a pointer to it
+    export OLDCF_LOCATION=`which cf`
+fi
+# get the newest version
 echo "Installing Cloud Foundry CLI"
+pushd . >/dev/null
 cd $EXT_DIR 
-mkdir bin
-cd bin
 curl --silent -o cf-linux-amd64.tgz -v -L https://cli.run.pivotal.io/stable?release=linux64-binary &>/dev/null 
 gunzip cf-linux-amd64.tgz &> /dev/null
 tar -xvf cf-linux-amd64.tar  &> /dev/null
-
 cf help &> /dev/null
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
-    echo "Cloud Foundry CLI not already installed, adding CF to PATH"
-    export PATH=$PATH:$EXT_DIR/bin
+    echo -e "${red}Could not install the cloud foundry CLI ${no_color}"
+    exit 1
+fi  
+popd >/dev/null
+echo -e "${label_color}Successfully installed Cloud Foundry CLI ${no_color}"
+
+##########################################
+# setup bluemix env
+##########################################
+# attempt to  target env automatically
+CF_API=`cf api`
+if [ $? -eq 0 ]; then
+    # find the bluemix api host
+    export BLUEMIX_API_HOST=`echo $CF_API  | awk '{print $3}' | sed '0,/.*\/\//s///'`
+    echo $BLUEMIX_API_HOST | grep 'stage1'
+    if [ $? -eq 0 ]; then
+        # on staging, make sure bm target is set for staging
+        export BLUEMIX_TARGET="staging"
+    else
+        # on prod, make sure bm target is set for prod
+        export BLUEMIX_TARGET="prod"
+    fi
+elif [ -n "$BLUEMIX_TARGET" ]; then
+    # cf not setup yet, try manual setup
+    if [ "$BLUEMIX_TARGET" == "staging" ]; then 
+        echo -e "Targetting staging Bluemix"
+        export BLUEMIX_API_HOST="api.stage1.ng.bluemix.net"
+    elif [ "$BLUEMIX_TARGET" == "prod" ]; then 
+        echo -e "Targetting production Bluemix"
+        export BLUEMIX_API_HOST="api.ng.bluemix.net"
+    else 
+        echo -e "${red}Unknown Bluemix environment specified${no_color}"
+    fi 
 else 
-    echo 'Cloud Foundry CLI already available in container.  Latest CLI version available in ${EXT_DIR}/bin'  
+    echo -e "Targetting production Bluemix"
+    export BLUEMIX_API_HOST="api.ng.bluemix.net"
+fi
+
+################################
+# Login to Container Service   #
+################################
+if [ -n "$BLUEMIX_USER" ] || [ ! -f ~/.cf/config.json ]; then
+    # need to gather information from the environment 
+    # Get the Bluemix user and password information 
+    if [ -z "$BLUEMIX_USER" ]; then 
+        echo -e "${red} Please set BLUEMIX_USER on environment ${no_color} "
+        exit 1
+    fi 
+    if [ -z "$BLUEMIX_PASSWORD" ]; then 
+        echo -e "${red} Please set BLUEMIX_PASSWORD as an environment property environment ${no_color} "
+        exit 1
+    fi 
+    if [ -z "$BLUEMIX_ORG" ]; then 
+        export BLUEMIX_ORG=$BLUEMIX_USER
+        echo -e "${label_color} Using ${BLUEMIX_ORG} for Bluemix organization, please set BLUEMIX_ORG if on the environment if you wish to change this. ${no_color} "
+    fi 
+    if [ -z "$BLUEMIX_SPACE" ]; then
+        export BLUEMIX_SPACE="dev"
+        echo -e "${label_color} Using ${BLUEMIX_SPACE} for Bluemix space, please set BLUEMIX_SPACE if on the environment if you wish to change this. ${no_color} "
+    fi 
+    echo -e "${label_color}Targetting information.  Can be updated by setting environment variables${no_color}"
+    echo "BLUEMIX_USER: ${BLUEMIX_USER}"
+    echo "BLUEMIX_SPACE: ${BLUEMIX_SPACE}"
+    echo "BLUEMIX_ORG: ${BLUEMIX_ORG}"
+    echo "BLUEMIX_PASSWORD: xxxxx"
+    echo ""
+    echo -e "${label_color}Logging in to Bluemix using environment properties${no_color}"
+    debugme echo "login command: cf login -a ${BLUEMIX_API_HOST} -u ${BLUEMIX_USER} -p XXXXX -o ${BLUEMIX_ORG} -s ${BLUEMIX_SPACE}"
+    cf login -a ${BLUEMIX_API_HOST} -u ${BLUEMIX_USER} -p ${BLUEMIX_PASSWORD} -o ${BLUEMIX_ORG} -s ${BLUEMIX_SPACE} 2> /dev/null
+    RESULT=$?
+else 
+    # we are already logged in.  Simply check via cf command 
+    echo -e "${label_color}Logging into IBM Container Service using credentials passed from IBM DevOps Services ${no_color}"
+    cf target >/dev/null 2>/dev/null
+    RESULT=$?
+    if [ ! $RESULT -eq 0 ]; then
+        echo "cf target did not return successfully.  Login failed."
+    fi 
 fi 
 
-# check that we are logged into cloud foundry correctly
-cf spaces 
-RESULT=$?
-if [ $RESULT -ne 0 ]; then
-    echo -e "${red}Failed to check cf spaces to confirm login${no_color}"
+
+# check login result 
+if [ $RESULT -eq 1 ]; then
+    echo -e "${red}Failed to login to IBM Bluemix${no_color}"
     exit $RESULT
 else 
     echo -e "${green}Successfully logged into IBM Bluemix${no_color}"
 fi 
-popd 
+
+
 
 export container_cf_version=$(cf --version)
 export latest_cf_version=$(${EXT_DIR}/bin/cf --version)
