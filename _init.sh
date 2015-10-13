@@ -269,6 +269,7 @@ export ICE_CFG="ice-cfg.ini"
 #    fi 
 #fi
 
+echo ${BLUEMIX_USER}
 ice $ICE_ARGS login --cf --host ${CCS_API_HOST} --registry ${CCS_REGISTRY_HOST} --api ${BLUEMIX_API_HOST} --user ${BLUEMIX_USER} --psswd ${BLUEMIX_PASSWORD} --org ${BLUEMIX_ORG} --space ${BLUEMIX_SPACE}
 
 export container_cf_version=$(cf --version)
