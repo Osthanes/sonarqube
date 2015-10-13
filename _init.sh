@@ -85,27 +85,39 @@ export LOG_DIR=$ARCHIVE_DIR
 #############################
 # Install Cloud Foundry CLI #
 #############################
+pushd . 
 echo "Installing Cloud Foundry CLI"
-pushd ${EXT_DIR} >/dev/null
+cd $EXT_DIR
+mkdir bin
+cd bin
+curl --silent -o cf-linux-amd64.tgz -v -L https://cli.run.pivotal.io/stable?release=linux64-binary &>/dev/null 
 gunzip cf-linux-amd64.tgz &> /dev/null
 tar -xvf cf-linux-amd64.tar  &> /dev/null
-${EXT_DIR}/cf help &> /dev/null
+
+cf help &> /dev/null
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
-    echo -e "${red}Could not install the Cloud Foundry CLI ${no_color}" | tee -a "$ERROR_LOG_FILE"
-    ${EXT_DIR}/print_help.sh
-    exit $RESULT
-fi
-popd >/dev/null
-echo -e "${label_color}Successfully installed Cloud Foundry CLI ${no_color}"
-${EXT_DIR}/cf target 
-RESULT=$?
-if [ $RESULT -ne 0 ]; then
-    echo -e "${red}Not configured for Bluemix ${no_color}"
-    cat ~/.
+    echo "Cloud Foundry CLI not already installed, adding CF to PATH"
+    export PATH=$PATH:$EXT_DIR/bin
 else 
-    echo -e "${green}Successfully enabled with Cloud Foundry on Bluemix${no_color}"
+    echo 'Cloud Foundry CLI already available in container.  Latest CLI version available in ${EXT_DIR}/bin'  
 fi 
+
+# check that we are logged into cloud foundry correctly
+cf spaces 
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+    echo -e "${red}Failed to check cf spaces to confirm login${no_color}"
+    exit $RESULT
+else 
+    echo -e "${green}Successfully logged into IBM Bluemix${no_color}"
+fi 
+popd 
+
+export container_cf_version=$(cf --version)
+export latest_cf_version=$(${EXT_DIR}/bin/cf --version)
+echo "Container Cloud Foundry CLI Version: ${container_cf_version}"
+echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
 
 ##########################################
 # setup bluemix env
