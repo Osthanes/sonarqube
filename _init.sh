@@ -38,6 +38,19 @@ if [ -z "$ERROR_LOG_FILE" ]; then
     export ERROR_LOG_FILE
 fi
 
+installwithpython27() {
+    echo "Installing Python 2.7"
+    sudo apt-get update &> /dev/null
+    sudo apt-get -y install python2.7 &> /dev/null
+    python --version 
+    wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py &> /dev/null
+    python get-pip.py --user &> /dev/null
+    export PATH=$PATH:~/.local/bin
+    wget https://static-ice.ng.bluemix.net/icecli-2.0.zip &> /dev/null
+    pip install --user icecli-2.0.zip > cli_install.log 2>&1 
+    debugme cat cli_install.log 
+}
+
 set +e
 set +x 
 ##################################################
@@ -118,6 +131,22 @@ export container_cf_version=$(cf --version)
 export latest_cf_version=$(${EXT_DIR}/bin/cf --version)
 echo "Container Cloud Foundry CLI Version: ${container_cf_version}"
 echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
+
+echo "Installing IBM Container Service CLI"
+ice help &> /dev/null
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+    installwithpython27
+    ice help &> /dev/null
+    RESULT=$?
+    if [ $RESULT -ne 0 ]; then
+        echo -e "${red}Failed to install IBM Container Service CLI ${no_color}" | tee -a "$ERROR_LOG_FILE"
+        debugme python --version
+        ${EXT_DIR}/print_help.sh
+        exit $RESULT
+    fi
+    echo -e "${label_color}Successfully installed IBM Container Service CLI ${no_color}"
+fi 
 
 ##########################################
 # setup bluemix env
@@ -208,10 +237,6 @@ export container_cf_version=$(cf --version)
 export latest_cf_version=$(${EXT_DIR}/bin/cf --version)
 echo "Container Cloud Foundry CLI Version: ${container_cf_version}"
 echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
-
-echo "Installing Containers Plug-in"
-${EXT_DIR}/bin/cf install-plugin https://static-ice.ng.bluemix.net/ibm-containers-linux_x64
-ls /tmp/ibm-containers*
 
 echo "Checking for existing SonarQube server"
 #${EXT_DIR}/bin/cf ic namespace set sonar_space
