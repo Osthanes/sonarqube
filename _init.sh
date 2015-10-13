@@ -228,7 +228,7 @@ echo "Container Cloud Foundry CLI Version: ${container_cf_version}"
 echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
 
 echo "Checking for existing SonarQube server"
-ice namespace set sonar_space
+ice namespace set sonar_space &> /dev/null
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
     ice images
