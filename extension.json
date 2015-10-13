@@ -5,6 +5,12 @@
     "desc_key": "ExtDesc",
     "extension_type": "Test",
     "message_key": "ExtMessage",
+    "inputs": [
+        {
+            "type": "Bluemix",
+            "inclusion" : "always"
+        }
+    ],
     "params": [
         {
             "name": "PROJ_KEY",
