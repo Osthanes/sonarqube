@@ -44,14 +44,14 @@ set +x
 # capture packages that on the originial container 
 ##################################################
 if [[ $DEBUG -eq 1 ]]; then
-    dpkg -l | grep '^ii' > $EXT_DIR/pkglist
+    dpkg -l | grep '^ii' > ${EXT_DIR}/pkglist
 fi 
 
 ###############################
 # Configure extension PATH    #
 ###############################
-if [ -n $EXT_DIR ]; then 
-    export PATH=$EXT_DIR:$PATH
+if [ -n ${EXT_DIR} ]; then 
+    export PATH=${EXT_DIR}:$PATH
 fi 
 ##############################
 # Configure extension LIB    #
@@ -86,7 +86,7 @@ export LOG_DIR=$ARCHIVE_DIR
 # Install Cloud Foundry CLI #
 #############################
 echo "Installing Cloud Foundry CLI"
-pushd $EXT_DIR >/dev/null
+pushd ${EXT_DIR} >/dev/null
 gunzip cf-linux-amd64.tgz &> /dev/null
 tar -xvf cf-linux-amd64.tar  &> /dev/null
 ${EXT_DIR}/cf help &> /dev/null
@@ -198,10 +198,10 @@ echo "Container Cloud Foundry CLI Version: ${container_cf_version}"
 echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
 
 echo "Installing Containers Plug-in"
-$EXT_DIR/cf install-plugin https://static-ice.ng.bluemix.net/ibm-containers-linux_x64
+${EXT_DIR}/cf install-plugin https://static-ice.ng.bluemix.net/ibm-containers-linux_x64
 
 echo "Checking for existing SonarQube server"
-$EXT_DIR/cf ic namespace set sonar_space
+${EXT_DIR}/cf ic namespace set sonar_space
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
     #space is already set, check for existing Sonar image
@@ -225,7 +225,7 @@ fi
 # get the extensions utilities #
 ################################
 pushd . >/dev/null
-cd $EXT_DIR 
+cd ${EXT_DIR} 
 git clone https://github.com/Osthanes/utilities.git utilities
 popd >/dev/null
 
@@ -233,6 +233,6 @@ popd >/dev/null
 # Capture packages installed on the container  
 #############################################
 if [[ $DEBUG -eq 1 ]]; then
-    dpkg -l | grep '^ii' > $EXT_DIR/pkglist2
-    diff $EXT_DIR/pkglist $EXT_DIR/pkglist2
+    dpkg -l | grep '^ii' > ${EXT_DIR}/pkglist2
+    diff ${EXT_DIR}/pkglist ${EXT_DIR}/pkglist2
 fi
