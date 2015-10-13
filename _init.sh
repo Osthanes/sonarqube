@@ -30,6 +30,14 @@ debugme() {
   [[ $DEBUG = 1 ]] && "$@" || :
 }
 
+#########################################
+# Configure log file to store errors  #
+#########################################
+if [ -z "$ERROR_LOG_FILE" ]; then
+    ERROR_LOG_FILE="${EXT_DIR}/errors.log"
+    export ERROR_LOG_FILE
+fi
+
 set +e
 set +x 
 ##################################################
@@ -74,64 +82,30 @@ else
 fi 
 export LOG_DIR=$ARCHIVE_DIR
 
-##############################
-## Install Cloud Foundry CLI #
-##############################
-#pushd . 
-#echo "Installing Cloud Foundry CLI"
-#cd $EXT_DIR 
-#mkdir bin
-#cd bin
-#curl --silent -o cf-linux-amd64.tgz -v -L https://cli.run.pivotal.io/stable?release=linux64-binary &>/dev/null 
-#gunzip cf-linux-amd64.tgz &> /dev/null
-#tar -xvf cf-linux-amd64.tar  &> /dev/null
-#
-#cf help &> /dev/null
-#RESULT=$?
-#if [ $RESULT -ne 0 ]; then
-#    echo "Cloud Foundry CLI not already installed, adding CF to PATH"
-#    export PATH=$PATH:$EXT_DIR/bin
-#else 
-#    echo 'Cloud Foundry CLI already available in container.  Latest CLI version available in ${EXT_DIR}/bin'  
-#fi 
-#
-## check that we are logged into cloud foundry correctly
-#cf spaces 
-#RESULT=$?
-#if [ $RESULT -ne 0 ]; then
-#    echo -e "${red}Failed to check cf spaces to confirm login${no_color}"
-#    exit $RESULT
-#else 
-#    echo -e "${green}Successfully logged into IBM Bluemix${no_color}"
-#fi 
-#popd 
-
-
-
 #############################
 # Install Cloud Foundry CLI #
 #############################
-cf help &> /dev/null
-RESULT=$?
-if [ $RESULT -eq 0 ]; then
-    # if already have an old version installed, save a pointer to it
-    export OLDCF_LOCATION=`which cf`
-fi
-# get the newest version
 echo "Installing Cloud Foundry CLI"
-pushd . >/dev/null
-cd $EXT_DIR 
-curl --silent -o cf-linux-amd64.tgz -v -L https://cli.run.pivotal.io/stable?release=linux64-binary &>/dev/null 
+pushd $EXT_DIR >/dev/null
 gunzip cf-linux-amd64.tgz &> /dev/null
 tar -xvf cf-linux-amd64.tar  &> /dev/null
-cf help &> /dev/null
+${EXT_DIR}/cf help &> /dev/null
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
-    echo -e "${red}Could not install the cloud foundry CLI ${no_color}"
-    exit 1
-fi  
+    echo -e "${red}Could not install the Cloud Foundry CLI ${no_color}" | tee -a "$ERROR_LOG_FILE"
+    ${EXT_DIR}/print_help.sh
+    exit $RESULT
+fi
 popd >/dev/null
 echo -e "${label_color}Successfully installed Cloud Foundry CLI ${no_color}"
+${EXT_DIR}/cf target 
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+    echo -e "${red}Not configured for Bluemix ${no_color}"
+    cat ~/.
+else 
+    echo -e "${green}Successfully enabled with Cloud Foundry on Bluemix${no_color}"
+fi 
 
 ##########################################
 # setup bluemix env
@@ -224,16 +198,28 @@ echo "Container Cloud Foundry CLI Version: ${container_cf_version}"
 echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
 
 echo "Installing Containers Plug-in"
-cf install-plugin https://static-ice.ng.bluemix.net/ibm-containers-linux_x64
+$EXT_DIR/cf install-plugin https://static-ice.ng.bluemix.net/ibm-containers-linux_x64
 
-#echo "Checking for existing SonarQube server"
-#cf ic namespace set sonar_space
-#RESULT=$?
-#if [ $RESULT -ne 0 ]; then
-#    #space is already set, check for existing Sonar image
-#else
-#    #space set to sonar_space, need to install new image
-#fi
+echo "Checking for existing SonarQube server"
+$EXT_DIR/cf ic namespace set sonar_space
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+    #space is already set, check for existing Sonar image
+    existing=$(${EXT_DIR}/cf ic images | grep "sonar")
+    if [ -z "$existing" ]; then
+        #sonar image is already present, check if running
+#        running=$()
+#        if [ -z "$running" ]; then
+#            #not running; start
+#        else
+#            #already running, exit
+#        fi
+    else
+        #no existing image, install
+    fi
+else
+    #space set to sonar_space, need to install new image
+fi
 
 ################################
 # get the extensions utilities #
