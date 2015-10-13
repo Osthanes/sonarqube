@@ -200,10 +200,10 @@ export CCS_API_HOST="${API_PREFIX}${CF_TARGET}"
 # build registry server hostname
 export CCS_REGISTRY_HOST="${REG_PREFIX}${CF_TARGET}"
 # set up the ice cfg
-#sed -i "s/ccs_host =.*/ccs_host = $CCS_API_HOST/g" $EXT_DIR/ice-cfg.ini
-#sed -i "s/reg_host =.*/reg_host = $CCS_REGISTRY_HOST/g" $EXT_DIR/ice-cfg.ini
-#sed -i "s/cf_api_url =.*/cf_api_url = $BLUEMIX_API_HOST/g" $EXT_DIR/ice-cfg.ini
-#export ICE_CFG="ice-cfg.ini"
+sed -i "s/ccs_host =.*/ccs_host = $CCS_API_HOST/g" $EXT_DIR/ice-cfg.ini
+sed -i "s/reg_host =.*/reg_host = $CCS_REGISTRY_HOST/g" $EXT_DIR/ice-cfg.ini
+sed -i "s/cf_api_url =.*/cf_api_url = $BLUEMIX_API_HOST/g" $EXT_DIR/ice-cfg.ini
+export ICE_CFG="ice-cfg.ini"
 
 
 ################################
@@ -251,7 +251,7 @@ else
     echo -e "${label_color}Logging into IBM Container Service using credentials passed from IBM DevOps Services ${no_color}"
     mkdir -p ~/.ice
     debugme cat "${EXT_DIR}/${ICE_CFG}"
-#    cp ${EXT_DIR}/${ICE_CFG} ~/.ice/ice-cfg.ini
+    cp ${EXT_DIR}/${ICE_CFG} ~/.ice/ice-cfg.ini
     debugme cat ~/.ice/ice-cfg.ini
     debugme echo "config.json:"
     debugme cat /home/jenkins/.cf/config.json | cut -c1-2
@@ -274,32 +274,32 @@ export latest_cf_version=$(${EXT_DIR}/bin/cf --version)
 echo "Container Cloud Foundry CLI Version: ${container_cf_version}"
 echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
 
-echo "Checking for existing SonarQube server"
-ice namespace set sonar_space &> /dev/null
-RESULT=$?
-if [ $RESULT -ne 0 ]; then
-    ice images
-    #space is already set, check for existing Sonar image
-    existing=$(ice images | grep "sonar")
-    if [ -z "$existing" ]; then
-        #sonar image is already present, check if running
-        echo "SonarQube server found, checking if running"
-#        running=$()
-#        if [ -z "$running" ]; then
-#            #not running; start
-#            echo "SonarQube server not running, starting"
-#        else
-#           #already running, exit
-#            echo "SonarQube server is running" 
-#        fi
-    else
-        #no existing image, install
-        echo "No SonarQube server found, creating one"
-    fi
-else
-    #space set to sonar_space, need to install new image
-    echo "Created new namespace, creating new SonarQube server"
-fi
+#echo "Checking for existing SonarQube server"
+#ice namespace set sonar_space &> /dev/null
+#RESULT=$?
+#if [ $RESULT -ne 0 ]; then
+#    ice images
+#    #space is already set, check for existing Sonar image
+#    existing=$(ice images | grep "sonar")
+#    if [ -z "$existing" ]; then
+#        #sonar image is already present, check if running
+#        echo "SonarQube server found, checking if running"
+##        running=$()
+##        if [ -z "$running" ]; then
+##            #not running; start
+##            echo "SonarQube server not running, starting"
+##        else
+##           #already running, exit
+##            echo "SonarQube server is running" 
+##        fi
+#    else
+#        #no existing image, install
+#        echo "No SonarQube server found, creating one"
+#    fi
+#else
+#    #space set to sonar_space, need to install new image
+#    echo "Created new namespace, creating new SonarQube server"
+#fi
 
 ################################
 # get the extensions utilities #
