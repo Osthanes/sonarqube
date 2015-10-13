@@ -151,48 +151,82 @@ fi
 ##########################################
 # setup bluemix env
 ##########################################
-# attempt to  target env automatically
-CF_API=`cf api`
-if [ $? -eq 0 ]; then
-    # find the bluemix api host
-    export BLUEMIX_API_HOST=`echo $CF_API  | awk '{print $3}' | sed '0,/.*\/\//s///'`
-    echo $BLUEMIX_API_HOST | grep 'stage1'
-    if [ $? -eq 0 ]; then
-        # on staging, make sure bm target is set for staging
-        export BLUEMIX_TARGET="staging"
-    else
-        # on prod, make sure bm target is set for prod
-        export BLUEMIX_TARGET="prod"
-    fi
-elif [ -n "$BLUEMIX_TARGET" ]; then
-    # cf not setup yet, try manual setup
+# if user entered a choice, use that
+if [ -n "$BLUEMIX_TARGET" ]; then
+    # user entered target use that
     if [ "$BLUEMIX_TARGET" == "staging" ]; then 
-        echo -e "Targetting staging Bluemix"
         export BLUEMIX_API_HOST="api.stage1.ng.bluemix.net"
     elif [ "$BLUEMIX_TARGET" == "prod" ]; then 
-        echo -e "Targetting production Bluemix"
         export BLUEMIX_API_HOST="api.ng.bluemix.net"
     else 
-        echo -e "${red}Unknown Bluemix environment specified${no_color}"
+        log_and_echo "$ERROR" "Unknown Bluemix environment specified: ${BLUEMIX_TARGET}, Defaulting to production"
+        export BLUEMIX_TARGET="prod"
+        export BLUEMIX_API_HOST="api.ng.bluemix.net"
     fi 
-else 
-    echo -e "Targetting production Bluemix"
-    export BLUEMIX_API_HOST="api.ng.bluemix.net"
+else
+    # try to auto-detect
+    CF_API=`${EXT_DIR}/cf api`
+    RESULT=$?
+    debugme echo "cf api returned: $CF_API"
+    if [ $RESULT -eq 0 ]; then
+        # find the bluemix api host
+        export BLUEMIX_API_HOST=`echo $CF_API  | awk '{print $3}' | sed '0,/.*\/\//s///'`
+        echo $BLUEMIX_API_HOST | grep 'stage1'
+        if [ $? -eq 0 ]; then
+            # on staging, make sure bm target is set for staging
+            export BLUEMIX_TARGET="staging"
+        else
+            # on prod, make sure bm target is set for prod
+            export BLUEMIX_TARGET="prod"
+        fi
+    else 
+        # failed, assume prod
+        export BLUEMIX_TARGET="prod"
+        export BLUEMIX_API_HOST="api.ng.bluemix.net"
+    fi
 fi
+echo "Bluemix host is '${BLUEMIX_API_HOST}'"
+echo "Bluemix target is '${BLUEMIX_TARGET}'"
+# strip off the hostname to get full domain
+CF_TARGET=`echo $BLUEMIX_API_HOST | sed 's/[^\.]*//'`
+if [ -z "$API_PREFIX" ]; then
+    API_PREFIX=$DEF_API_PREFIX
+fi
+if [ -z "$REG_PREFIX" ]; then
+    REG_PREFIX=$DEF_REG_PREFIX
+fi
+# build api server hostname
+export CCS_API_HOST="${API_PREFIX}${CF_TARGET}"
+# build registry server hostname
+export CCS_REGISTRY_HOST="${REG_PREFIX}${CF_TARGET}"
+# set up the ice cfg
+sed -i "s/ccs_host =.*/ccs_host = $CCS_API_HOST/g" $EXT_DIR/ice-cfg.ini
+sed -i "s/reg_host =.*/reg_host = $CCS_REGISTRY_HOST/g" $EXT_DIR/ice-cfg.ini
+sed -i "s/cf_api_url =.*/cf_api_url = $BLUEMIX_API_HOST/g" $EXT_DIR/ice-cfg.ini
+export ICE_CFG="ice-cfg.ini"
+
 
 ################################
 # Login to Container Service   #
 ################################
-if [ -n "$BLUEMIX_USER" ] || [ ! -f ~/.cf/config.json ]; then
+if [ -n "$API_KEY" ]; then 
+    echo -e "${label_color}Logging on with API_KEY${no_color}"
+    debugme echo "Login command: ice $ICE_ARGS login --key ${API_KEY}"
+    #ice $ICE_ARGS login --key ${API_KEY} --host ${CCS_API_HOST} --registry ${CCS_REGISTRY_HOST} --api ${BLUEMIX_API_HOST} 
+    ice $ICE_ARGS login --key ${API_KEY} 2> /dev/null
+    RESULT=$?
+elif [ -n "$BLUEMIX_USER" ] || [ ! -f ~/.cf/config.json ]; then
     # need to gather information from the environment 
     # Get the Bluemix user and password information 
     if [ -z "$BLUEMIX_USER" ]; then 
-        echo -e "${red} Please set BLUEMIX_USER on environment ${no_color} "
+        echo -e "${red} Please set BLUEMIX_USER on environment ${no_color}" | tee -a "$ERROR_LOG_FILE"
+        ${EXT_DIR}/print_help.sh
         exit 1
     fi 
     if [ -z "$BLUEMIX_PASSWORD" ]; then 
-        echo -e "${red} Please set BLUEMIX_PASSWORD as an environment property environment ${no_color} "
-        exit 1
+        echo -e "${red} Please set BLUEMIX_PASSWORD as an environment property environment ${no_color}" | tee -a "$ERROR_LOG_FILE"
+        ${EXT_DIR}/print_help.sh    
+        exit 1 
     fi 
     if [ -z "$BLUEMIX_ORG" ]; then 
         export BLUEMIX_ORG=$BLUEMIX_USER
@@ -208,17 +242,30 @@ if [ -n "$BLUEMIX_USER" ] || [ ! -f ~/.cf/config.json ]; then
     echo "BLUEMIX_ORG: ${BLUEMIX_ORG}"
     echo "BLUEMIX_PASSWORD: xxxxx"
     echo ""
-    echo -e "${label_color}Logging in to Bluemix using environment properties${no_color}"
-    debugme echo "login command: cf login -a ${BLUEMIX_API_HOST} -u ${BLUEMIX_USER} -p XXXXX -o ${BLUEMIX_ORG} -s ${BLUEMIX_SPACE}"
-    cf login -a ${BLUEMIX_API_HOST} -u ${BLUEMIX_USER} -p ${BLUEMIX_PASSWORD} -o ${BLUEMIX_ORG} -s ${BLUEMIX_SPACE} 2> /dev/null
+    echo -e "${label_color}Logging in to Bluemix and IBM Container Service using environment properties${no_color}"
+    debugme echo "login command: ice $ICE_ARGS login --cf --host ${CCS_API_HOST} --registry ${CCS_REGISTRY_HOST} --api ${BLUEMIX_API_HOST} --user ${BLUEMIX_USER} --psswd ${BLUEMIX_PASSWORD} --org ${BLUEMIX_ORG} --space ${BLUEMIX_SPACE}"
+    ice $ICE_ARGS login --cf --host ${CCS_API_HOST} --registry ${CCS_REGISTRY_HOST} --api ${BLUEMIX_API_HOST} --user ${BLUEMIX_USER} --psswd ${BLUEMIX_PASSWORD} --org ${BLUEMIX_ORG} --space ${BLUEMIX_SPACE} 2> /dev/null
     RESULT=$?
 else 
-    # we are already logged in.  Simply check via cf command 
+    # we are already logged in.  Simply check via ice command 
     echo -e "${label_color}Logging into IBM Container Service using credentials passed from IBM DevOps Services ${no_color}"
-    cf target >/dev/null 2>/dev/null
+    mkdir -p ~/.ice
+    debugme cat "${EXT_DIR}/${ICE_CFG}"
+    cp ${EXT_DIR}/${ICE_CFG} ~/.ice/ice-cfg.ini
+    debugme cat ~/.ice/ice-cfg.ini
+    debugme echo "config.json:"
+    debugme cat /home/jenkins/.cf/config.json | cut -c1-2
+    debugme cat /home/jenkins/.cf/config.json | cut -c3-
+    debugme echo "testing ice login via ice info command"
+    ice --verbose info > info.log 2> /dev/null
     RESULT=$?
-    if [ ! $RESULT -eq 0 ]; then
-        echo "cf target did not return successfully.  Login failed."
+    debugme cat info.log 
+    if [ $RESULT -eq 0 ]; then
+        echo "ice info was successful.  Checking login to registry server" 
+        ice images &> /dev/null
+        RESULT=$? 
+    else 
+        echo "ice info did not return successfully.  Login failed."
     fi 
 fi 
 
@@ -228,6 +275,7 @@ echo "Container Cloud Foundry CLI Version: ${container_cf_version}"
 echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
 
 echo "Checking for existing SonarQube server"
+ice login
 ice namespace set sonar_space &> /dev/null
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
