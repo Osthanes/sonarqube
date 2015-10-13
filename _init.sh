@@ -222,48 +222,37 @@ else
     fi 
 fi 
 
-
-# check login result 
-if [ $RESULT -eq 1 ]; then
-    echo -e "${red}Failed to login to IBM Bluemix${no_color}"
-    exit $RESULT
-else 
-    echo -e "${green}Successfully logged into IBM Bluemix${no_color}"
-fi 
-
-
-
 export container_cf_version=$(cf --version)
 export latest_cf_version=$(${EXT_DIR}/bin/cf --version)
 echo "Container Cloud Foundry CLI Version: ${container_cf_version}"
 echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
 
 echo "Checking for existing SonarQube server"
-#${EXT_DIR}/bin/cf ic namespace set sonar_space
-#RESULT=$?
-#if [ $RESULT -ne 0 ]; then
-#    ${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic images
-#    #space is already set, check for existing Sonar image
-#    existing=$(${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic images | grep "sonar")
-#    if [ -z "$existing" ]; then
-#        #sonar image is already present, check if running
-#        echo "SonarQube server found, checking if running"
-##        running=$()
-##        if [ -z "$running" ]; then
-##            #not running; start
-##            echo "SonarQube server not running, starting"
-##        else
-##           #already running, exit
-##            echo "SonarQube server is running" 
-##        fi
-#    else
-#        #no existing image, install
-#        echo "No SonarQube server found, creating one"
-#    fi
-#else
-#    #space set to sonar_space, need to install new image
-#    echo "Created new namespace, creating new SonarQube server"
-#fi
+ice namespace set sonar_space
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+    ice images
+    #space is already set, check for existing Sonar image
+    existing=$(ice images | grep "sonar")
+    if [ -z "$existing" ]; then
+        #sonar image is already present, check if running
+        echo "SonarQube server found, checking if running"
+#        running=$()
+#        if [ -z "$running" ]; then
+#            #not running; start
+#            echo "SonarQube server not running, starting"
+#        else
+#           #already running, exit
+#            echo "SonarQube server is running" 
+#        fi
+    else
+        #no existing image, install
+        echo "No SonarQube server found, creating one"
+    fi
+else
+    #space set to sonar_space, need to install new image
+    echo "Created new namespace, creating new SonarQube server"
+fi
 
 ################################
 # get the extensions utilities #
