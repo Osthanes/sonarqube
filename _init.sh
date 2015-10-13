@@ -211,7 +211,7 @@ echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
 
 echo "Installing Containers Plug-in"
 ${EXT_DIR}/bin/cf install-plugin https://static-ice.ng.bluemix.net/ibm-containers-linux_x64
-ls ${EXT_DIR}/bin/
+ls ${EXT_DIR}/bin/cf
 echo "Checking for existing SonarQube server"
 #${EXT_DIR}/bin/cf ${EXT_DIR}/bin/ic namespace set sonar_space
 #RESULT=$?
