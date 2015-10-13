@@ -111,6 +111,18 @@ export latest_cf_version=$(${EXT_DIR}/bin/cf --version)
 echo "Container Cloud Foundry CLI Version: ${container_cf_version}"
 echo "Latest Cloud Foundry CLI Version: ${latest_cf_version}"
 
+echo "Installing Containers Plug-in"
+cf install-plugin https://static-ice.ng.bluemix.net/ibm-containers-linux_x64
+
+#echo "Checking for existing SonarQube server"
+#cf ic namespace set sonar_space
+#RESULT=$?
+#if [ $RESULT -ne 0 ]; then
+#    #space is already set, check for existing Sonar image
+#else
+#    #space set to sonar_space, need to install new image
+#fi
+
 ################################
 # get the extensions utilities #
 ################################
