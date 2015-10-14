@@ -350,75 +350,8 @@ popd >/dev/null
 # set up sonarqube server
 ###########################################
 createNewSonarServer() {
-    mkdir sonar/
-    cd sonar/
-    echo "#!/bin/bash
-apt-get update
-apt-get upgrade
-
-
-export TEST_HOST=`hostname`
-export TEST_IP=`ip addr show | grep "\<172\." | awk '{print $2}' | awk -F "/" '{print $1}'`
-echo -e "$TEST_IP    $TEST_HOST" >>/etc/hosts
-
-set -e
-
-if [ "${1:0:1}" != '-' ]; then
-	exec "$@"
-fi
-
-exec java -jar lib/sonar-application-$SONAR_VERSION.jar \
-  -Dsonar.log.console=true \
-  -Dsonar.jdbc.username="$SONARQUBE_JDBC_USERNAME" \
-  -Dsonar.jdbc.password="$SONARQUBE_JDBC_PASSWORD" \
-  -Dsonar.jdbc.url="$SONARQUBE_JDBC_URL" \
-  -Dsonar.web.javaAdditionalOpts="-Djava.security.egd=file:/dev/./urandom" \
-	"$@"" > run.sh
-    
-    echo "FROM java:openjdk-8u45-jdk
-
-MAINTAINER David Gageot <david.gageot@sonarsource.com>
-
-ENV SONARQUBE_HOME /opt/sonarqube
-
-# Http port
-EXPOSE 9000
-
-# H2 Database port
-EXPOSE 9092
-
-# Database configuration
-# Defaults to using H2
-ENV SONARQUBE_JDBC_USERNAME sonar
-ENV SONARQUBE_JDBC_PASSWORD sonar
-ENV SONARQUBE_JDBC_URL jdbc:h2:tcp://localhost:9092/sonar
-
-ENV SONAR_VERSION 5.1.2
-
-# pub   2048R/D26468DE 2015-05-25
-#      Key fingerprint = F118 2E81 C792 9289 21DB  CAB4 CFCA 4A29 D264 68DE
-# uid       [ unknown] sonarsource_deployer (Sonarsource Deployer) <infra@sonarsource.com>
-# sub   2048R/06855C1D 2015-05-25
-RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys F1182E81C792928921DBCAB4CFCA4A29D26468DE
-
-RUN set -x \
-	&& cd /opt \
-	&& curl -o sonarqube.zip -fSL http://downloads.sonarsource.com/sonarqube/sonarqube-$SONAR_VERSION.zip \
-	&& curl -o sonarqube.zip.asc -fSL http://downloads.sonarsource.com/sonarqube/sonarqube-$SONAR_VERSION.zip.asc \
-	&& gpg --verify sonarqube.zip.asc \
-	&& unzip sonarqube.zip \
-	&& mv sonarqube-$SONAR_VERSION sonarqube \
-	&& rm sonarqube.zip* \
-	&& rm -rf $SONARQUBE_HOME/bin/* \
-	&& curl -o sonar-javascript-plugin-2.8.jar -fSL https://sonarsource.bintray.com/Distribution/sonar-javascript-plugin/sonar-javascript-plugin-2.8.jar \
-	&& mv sonar-javascript-plugin-2.8.jar $SONARQUBE_HOME/extensions/plugins/
-
-VOLUME ["$SONARQUBE_HOME/data", "$SONARQUBE_HOME/extensions"]
-
-WORKDIR $SONARQUBE_HOME
-COPY run.sh $SONARQUBE_HOME/bin/
-ENTRYPOINT ["./bin/run.sh"]
-" > Dockerfile
+    git clone https://github.com/Osthanes/sonar_IBM_Bluemix.git
+    cd sonar_IBM_Bluemix/
     
     namespace=$(ice namespace get)
     ice build -t $namespace/sonarqube:v1 .
