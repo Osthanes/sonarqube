@@ -380,12 +380,14 @@ if [ $RESULT -ne 0 ]; then
                 #need to run it from scratch
                 ice run -d --name sonarqube_ip -p 9000:9000 -p 9092:9092 sonarqube:v1
             fi
-            IP_ADDR=$(ice port sonarqube_ip | tail -1 | cut -f 3 -d " " - | cut -f 1 -d ":" -)
+            ice inspect sonarqube_ip > ipJSON.json
+            IP_ADDR=$({EXT_DIR}/parse.py)
             export IP_ADDR
         else
            #already running, exit
             echo "SonarQube server is running"
-            IP_ADDR=$(ice port sonarqube_ip | tail -1 | cut -f 3 -d " " - | cut -f 1 -d ":" -)
+            ice inspect sonarqube_ip > ipJSON.json
+            IP_ADDR=$({EXT_DIR}/parse.py)
             export IP_ADDR
         fi
     else
