@@ -438,9 +438,10 @@ COPY run.sh $SONARQUBE_HOME/bin/
 ENTRYPOINT ["./bin/run.sh"]
 " > Dockerfile
     
-    ls
-    cat Dockerfile
-    cat run.sh
+    namespace=$(ice namepace get)
+    ice build -t $namespace/sonarqube .
+    
+    ice images
         
     fi
 else
