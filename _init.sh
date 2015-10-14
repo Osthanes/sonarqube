@@ -350,6 +350,8 @@ popd >/dev/null
 # set up sonarqube server
 ###########################################
 createNewSonarServer() {
+    mkdir sonar/
+    cd sonar/
     echo "#!/bin/bash
 apt-get update
 apt-get upgrade
@@ -418,10 +420,11 @@ COPY run.sh $SONARQUBE_HOME/bin/
 ENTRYPOINT ["./bin/run.sh"]
 " > Dockerfile
     
-    namespace=$(ice namepace get)
+    namespace=$(ice namespace get)
     ice build -t $namespace/sonarqube:v1 .
     
     ice images
+    cd ..
 }
 
 echo "Checking for existing SonarQube server"
