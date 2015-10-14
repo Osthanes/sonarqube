@@ -374,7 +374,7 @@ if [ $RESULT -ne 0 ]; then
             echo "SonarQube server not running, starting"
             #check if its previously stopped
             stopped=$(ice ps -a | grep "sonar" | grep "Shutdown")
-            if [ -z "$stopped" ]; then
+            if [ ! -z "$stopped" ]; then
                 ice start sonarqube_ip
             else
                 #need to run it from scratch
