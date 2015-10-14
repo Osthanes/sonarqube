@@ -356,9 +356,9 @@ createNewSonarServer() {
     namespace=$(ice namespace get)
     ice build -t $namespace/sonarqube:v1 .
     
-    ice run -d --name sonarqube_ip -p 9000:9000 -p 9092:9092 sonarqube:v1
+    ice run -d --name sonarqube_ip -p 9000 -p 9092 sonarqube:v1
 }
-
+ice inspect sonarqube_ip
 echo "Checking for existing SonarQube server"
 ice namespace set sonar_space &> /dev/null
 RESULT=$?
@@ -378,7 +378,7 @@ if [ $RESULT -ne 0 ]; then
                 ice start sonarqube_ip
             else
                 #need to run it from scratch
-                ice run -d --name sonarqube_ip -p 9000:9000 -p 9092:9092 sonarqube:v1
+                ice run -d --name sonarqube_ip -p 9000 -p 9092 sonarqube:v1
             fi
             ice inspect sonarqube_ip > ipJSON.json
             IP_ADDR=$(${EXT_DIR}/parse.py)
