@@ -356,7 +356,7 @@ if [ $RESULT -ne 0 ]; then
     if [ ! -z "$existing" ]; then
         #sonar image is already present, check if running
         echo "SonarQube server found, checking if running"
-        running=$(echo $existing | grep "Running")
+        running=$(ice ps | grep "sonar" | grep "Running")
         if [ -z "$running" ]; then
             #not running; start
             echo "SonarQube server not running, starting"
