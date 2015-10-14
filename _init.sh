@@ -359,7 +359,7 @@ if [ $RESULT -ne 0 ]; then
         if [ -z "$running" ]; then
             #not running; start
             echo "SonarQube server not running, starting"
-            ice start docker_ip
+            ice start sonarqube_ip
             ice ps
         else
            #already running, exit
