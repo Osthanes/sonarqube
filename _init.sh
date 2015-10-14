@@ -208,7 +208,7 @@ if [ -n "$BLUEMIX_TARGET" ]; then
     fi 
 else
     # try to auto-detect
-    CF_API=`${EXT_DIR}/cf api`
+    CF_API=`${EXT_DIR}/bin/cf api`
     RESULT=$?
     debugme echo "cf api returned: $CF_API"
     if [ $RESULT -eq 0 ]; then
@@ -353,7 +353,7 @@ if [ $RESULT -ne 0 ]; then
     ice images
     #space is already set, check for existing Sonar image
     existing=$(ice images | grep "sonar")
-    if [ -z "$existing" ]; then
+    if [ ! -z "$existing" ]; then
         #sonar image is already present, check if running
         echo "SonarQube server found, checking if running"
 #        running=$()
