@@ -370,7 +370,16 @@ if [ $RESULT -ne 0 ]; then
     else
         #no existing image, install
         echo "No SonarQube server found, creating one"
-        echo "#!/bin/bash
+        createNewSonarServer()
+    fi
+else
+    #space set to sonar_space, need to install new image
+    echo "Created new namespace, creating new SonarQube server"
+fi
+
+
+createNewSonarServer() {
+    echo "#!/bin/bash
 apt-get update
 apt-get upgrade
 
@@ -439,12 +448,7 @@ ENTRYPOINT ["./bin/run.sh"]
 " > Dockerfile
     
     namespace=$(ice namepace get)
-    ice build -t $namespace/sonarqube .
+    ice build -t $namespace/sonarqube:v1 .
     
     ice images
-        
-    fi
-else
-    #space set to sonar_space, need to install new image
-    echo "Created new namespace, creating new SonarQube server"
-fi
+}
