@@ -356,8 +356,7 @@ createNewSonarServer() {
     namespace=$(ice namespace get)
     ice build -t $namespace/sonarqube:v1 .
     
-    ice images
-    cd ..
+    ice run -d --name sonarqube_ip -p 9000:9000 -p 9092:9092 sonarqube:v1
 }
 
 echo "Checking for existing SonarQube server"
@@ -373,10 +372,21 @@ if [ $RESULT -ne 0 ]; then
         if [ -z "$running" ]; then
             #not running; start
             echo "SonarQube server not running, starting"
-            ice start sonarqube_ip
+            #check if its previously stopped
+            stopped=$(ice ps -a | grep "sonar" | grep "Shutdown")
+            if [ -z "$stopped" ]; then
+                ice start sonarqube_ip
+            else
+                #need to run it from scratch
+                ice run -d --name sonarqube_ip -p 9000:9000 -p 9092:9092 sonarqube:v1
+            fi
+            IP_ADDR=$(ice port sonarqube_ip | tail -1 | cut -f 3 -d " " - | cut -f 1 -d ":" -)
+            export IP_ADDR
         else
            #already running, exit
-            echo "SonarQube server is running" 
+            echo "SonarQube server is running"
+            IP_ADDR=$(ice port sonarqube_ip | tail -1 | cut -f 3 -d " " - | cut -f 1 -d ":" -)
+            export IP_ADDR
         fi
     else
         #no existing image, install
@@ -386,4 +396,5 @@ if [ $RESULT -ne 0 ]; then
 else
     #space set to sonar_space, need to install new image
     echo "Created new namespace, creating new SonarQube server"
+    createNewSonarServer
 fi

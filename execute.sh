@@ -9,9 +9,9 @@ rm sonar-runner-2.4/conf/sonar-runner.properties
 echo "#Configure here general information about the environment, such as SonarQube DB details for example
 #No information about specific project should appear here
 #----- Default SonarQube server
-sonar.host.url=http://134.168.19.103:9000
+sonar.host.url=http://$IP_ADDR:9000
 #temp DB
-sonar.jdbc.url=jdbc:h2:tcp://134.168.19.103/sonar
+sonar.jdbc.url=jdbc:h2:tcp://$IP_ADDR/sonar
 #----- PostgreSQL
 #sonar.jdbc.url=jdbc:postgresql://134.168.19.103/sonar
 #----- Global database settings
