@@ -349,35 +349,6 @@ popd >/dev/null
 ###########################################
 # set up sonarqube server
 ###########################################
-echo "Checking for existing SonarQube server"
-ice namespace set sonar_space &> /dev/null
-RESULT=$?
-if [ $RESULT -ne 0 ]; then
-    #space is already set, check for existing Sonar image
-    existing=$(ice images | grep "sonar")
-    if [ ! -z "$existing" ]; then
-        #sonar image is already present, check if running
-        echo "SonarQube server found, checking if running"
-        running=$(ice ps | grep "sonar" | grep "Running")
-        if [ -z "$running" ]; then
-            #not running; start
-            echo "SonarQube server not running, starting"
-            ice start sonarqube_ip
-        else
-           #already running, exit
-            echo "SonarQube server is running" 
-        fi
-    else
-        #no existing image, install
-        echo "No SonarQube server found, creating one"
-        createNewSonarServer
-    fi
-else
-    #space set to sonar_space, need to install new image
-    echo "Created new namespace, creating new SonarQube server"
-fi
-
-
 createNewSonarServer() {
     echo "#!/bin/bash
 apt-get update
@@ -452,3 +423,31 @@ ENTRYPOINT ["./bin/run.sh"]
     
     ice images
 }
+
+echo "Checking for existing SonarQube server"
+ice namespace set sonar_space &> /dev/null
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+    #space is already set, check for existing Sonar image
+    existing=$(ice images | grep "sonar")
+    if [ ! -z "$existing" ]; then
+        #sonar image is already present, check if running
+        echo "SonarQube server found, checking if running"
+        running=$(ice ps | grep "sonar" | grep "Running")
+        if [ -z "$running" ]; then
+            #not running; start
+            echo "SonarQube server not running, starting"
+            ice start sonarqube_ip
+        else
+           #already running, exit
+            echo "SonarQube server is running" 
+        fi
+    else
+        #no existing image, install
+        echo "No SonarQube server found, creating one"
+        createNewSonarServer
+    fi
+else
+    #space set to sonar_space, need to install new image
+    echo "Created new namespace, creating new SonarQube server"
+fi
