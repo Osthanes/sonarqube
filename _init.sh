@@ -370,7 +370,7 @@ if [ $RESULT -ne 0 ]; then
     else
         #no existing image, install
         echo "No SonarQube server found, creating one"
-        createNewSonarServer()
+        createNewSonarServer
     fi
 else
     #space set to sonar_space, need to install new image
