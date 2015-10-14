@@ -339,47 +339,36 @@ else
 fi  
 
 ###########################################
-# Install cloud-cli for service providers #
-###########################################
-# setup cloud controller variable 
-export CLOUD_CONTROLLER_API_HOST="https://ace${CF_TARGET}"
-debugme echo "CLOUD_CONTROLLER_API_HOST:$CLOUD_CONTROLLER_API_HOST"
-
-pushd . 
-cd ${EXT_DIR}
-if [ ! -f "cloudOECommandLine.zip" ]; then
-    wget --no-check-certificate ace.ng.bluemix.net/doc/cl/downloads/cloudOECommandLine.zip &> /dev/null
-fi
-unzip cloudOECommandLine.zip -d cloud-cli &> /dev/null
-# cloud-cli zip structure fluctuates
-if [ ! -e "${EXT_DIR}/cloud-cli/bin" ]; then
-    if [ -d "${EXT_DIR}/bin" ]; then
-        ln -s ${EXT_DIR}/bin ${EXT_DIR}/cloud-cli/bin
-    fi
-fi
-# check if the jre is included, if not then fake it
-if [ ! -d ${EXT_DIR}/cloud-cli/cloud-cli/jre ]; then
-    if [ -z `which java` ]; then
-        echo "Installing openjdk-7-jre to support cloud-cli"
-        sudo apt-get -y install openjdk-7-jre &> /dev/null
-    fi
-    mkdir ${EXT_DIR}/cloud-cli/cloud-cli/jre
-    mkdir ${EXT_DIR}/cloud-cli/cloud-cli/jre/bin
-    ln -s `which java` ${EXT_DIR}/cloud-cli/cloud-cli/jre/bin/java
-fi
-export PATH=$PATH:${EXT_DIR}/cloud-cli/bin
-cloud-cli target $CLOUD_CONTROLLER_API_HOST
-
-popd
-###########################################
 # get the extensions utilities
 ###########################################
-
 pushd . >/dev/null
 cd $EXT_DIR 
 git clone https://github.com/Osthanes/utilities.git utilities
 popd >/dev/null
-# enable logging to logmet
-source $EXT_DIR/utilities/logging_utils.sh
-setup_met_logging "${BLUEMIX_USER}" "${BLUEMIX_PASSWORD}" "${BLUEMIX_SPACE}" "${BLUEMIX_ORG}" "${BLUEMIX_TARGET}"    
+
+#echo "Checking for existing SonarQube server"
+ice namespace set sonar_space &> /dev/null
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+    ice images
+    #space is already set, check for existing Sonar image
+    existing=$(ice images | grep "sonar")
+    if [ -z "$existing" ]; then
+        #sonar image is already present, check if running
+        echo "SonarQube server found, checking if running"
+#        running=$()
+#        if [ -z "$running" ]; then
+#            #not running; start
+#            echo "SonarQube server not running, starting"
+#        else
+#           #already running, exit
+#            echo "SonarQube server is running" 
+#        fi
+    else
+        #no existing image, install
+        echo "No SonarQube server found, creating one"
+    fi
+else
+    #space set to sonar_space, need to install new image
+    echo "Created new namespace, creating new SonarQube server"
 fi
