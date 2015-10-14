@@ -350,7 +350,6 @@ popd >/dev/null
 ice namespace set sonar_space &> /dev/null
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
-    ice images
     #space is already set, check for existing Sonar image
     existing=$(ice images | grep "sonar")
     if [ ! -z "$existing" ]; then
@@ -360,6 +359,8 @@ if [ $RESULT -ne 0 ]; then
         if [ -z "$running" ]; then
             #not running; start
             echo "SonarQube server not running, starting"
+            ice start docker_ip
+            ice ps
         else
            #already running, exit
             echo "SonarQube server is running" 
