@@ -360,6 +360,7 @@ createNewSonarServer() {
 }
 
 echo "Checking for existing SonarQube server"
+ice inspect sonarqube_ip
 ice namespace set sonar_space &> /dev/null
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
