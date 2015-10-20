@@ -360,8 +360,6 @@ createNewSonarServer() {
 }
 
 echo "Checking for existing SonarQube server"
-ice version
-ice inspect sonarqube_ip
 ice namespace set sonar_space &> /dev/null
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
@@ -375,22 +373,22 @@ if [ $RESULT -ne 0 ]; then
             #not running; start
             echo "SonarQube server not running, starting"
             #check if its previously stopped
-#            stopped=$(ice ps -a | grep "sonar" | grep "Shutdown")
-#            if [ ! -z "$stopped" ]; then
-#                ice start sonarqube_ip
-#            else
-#                #need to run it from scratch
-#                ice run -d --name sonarqube_ip -p 9000 -p 9092 sonarqube:v1
-#            fi
-#            ice inspect sonarqube_ip > ipJSON.json
-#            IP_ADDR=$(${EXT_DIR}/parse.py)
-#            export IP_ADDR
+            stopped=$(ice ps -a | grep "sonar" | grep "Shutdown")
+            if [ ! -z "$stopped" ]; then
+                ice start sonarqube_ip
+            else
+                #need to run it from scratch
+                ice run -d --name sonarqube_ip -p 9000 -p 9092 sonarqube:v1
+            fi
+            ice inspect sonarqube_ip > ipJSON.json
+            IP_ADDR=$(${EXT_DIR}/parse.py)
+            export IP_ADDR
         else
            #already running, exit
             echo "SonarQube server is running"
-#            ice inspect sonarqube_ip > ipJSON.json
-#            IP_ADDR=$(${EXT_DIR}/parse.py)
-#            export IP_ADDR
+            ice inspect sonarqube_ip > ipJSON.json
+            IP_ADDR=$(${EXT_DIR}/parse.py)
+            export IP_ADDR
         fi
     else
         #no existing image, install

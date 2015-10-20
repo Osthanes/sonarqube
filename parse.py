@@ -7,4 +7,4 @@ import os
 with open('ipJSON.json') as jsonFile:
     ipJson = json.load(jsonFile)
 
-print ipJson[0]["NetworkSettings"]["PublicIpAddress"]
+print ipJson["NetworkSettings"]["PublicIpAddress"]
