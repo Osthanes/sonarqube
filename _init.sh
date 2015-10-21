@@ -380,6 +380,7 @@ if [ $RESULT -ne 0 ]; then
                 #need to run it from scratch
                 ice run -d --name sonarqube_ip -p 9000 -p 9092 sonarqube:v1
             fi
+            sleep 2m
             ice inspect sonarqube_ip > ipJSON.json
             IP_ADDR=$(${EXT_DIR}/parse.py)
             export IP_ADDR
